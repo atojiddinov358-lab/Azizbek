@@ -1,2 +1,1 @@
-ism: Abdulloh
-familya: ko't
+salomlar men azizbek 
