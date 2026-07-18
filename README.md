@@ -1,1 +1,2 @@
-# Azizbek
+ism: Abdulloh
+familya: ko't
