@@ -17,4 +17,4 @@ Har tong ortida yashirin bir bahor.
 Yiqilsang ham, yana tur, ey dil,
 Orzularing bo‘lmasin hech ham til.
 Chunki eng go‘zal kunlar hali oldinda,
-Ishon — sening hikoyang endi boshlanadi. 🌟
+Ishon — sening hikoyang endi boshlanar. 🌟
