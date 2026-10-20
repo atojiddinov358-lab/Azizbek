@@ -1,0 +1,191 @@
+"""Import up to 500 sourced history articles into THE HIDDEN ARCHIVE.
+
+Install this file as core/management/commands/import_wikipedia_articles.py.
+Run with: python manage.py import_wikipedia_articles --limit 500
+
+Uses Wikipedia's public MediaWiki API. Imported text is a short encyclopedia extract,
+not a substitute for human-edited long-form articles. Wikipedia text is CC BY-SA;
+source attribution is added to each article and a SourceReference is created.
+"""
+from __future__ import annotations
+
+import re
+import time
+from datetime import date
+from urllib.parse import quote
+
+import requests
+from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
+from django.utils.text import slugify
+
+from archive.models import Article, Category, SourceReference
+
+API = "https://en.wikipedia.org/w/api.php"
+HEADERS = {"User-Agent": "TheHiddenArchive/1.0 (educational history archive; contact site administrator)"}
+TOPICS = [
+    ("Ancient Civilizations", "ancient civilizations"),
+    ("Ancient Civilizations", "ancient Egypt pharaoh pyramids"),
+    ("Ancient Civilizations", "Mesopotamia Sumer Babylon Assyria"),
+    ("Ancient Civilizations", "ancient Greece Athens Sparta"),
+    ("Ancient Civilizations", "ancient Rome Roman Empire"),
+    ("Ancient Civilizations", "Indus Valley civilization"),
+    ("Ancient Civilizations", "Maya Aztec Inca civilization"),
+    ("Wars & Battles", "World War II battles"),
+    ("Wars & Battles", "World War I battles"),
+    ("Wars & Battles", "medieval battles sieges"),
+    ("Wars & Battles", "famous military commanders history"),
+    ("People Who Changed History", "historical scientists discoveries"),
+    ("People Who Changed History", "famous explorers expeditions"),
+    ("People Who Changed History", "women who changed history"),
+    ("People Who Changed History", "historical rulers queens kings"),
+    ("Mysteries & Discoveries", "archaeological discoveries"),
+    ("Mysteries & Discoveries", "shipwreck discoveries archaeology"),
+    ("Mysteries & Discoveries", "lost cities ancient ruins"),
+    ("Culture & Inventions", "history of inventions"),
+    ("Culture & Inventions", "history of writing libraries books"),
+    ("Culture & Inventions", "Silk Road historical trade"),
+    ("Culture & Inventions", "historical architecture monuments"),
+    ("Revolutions & Empires", "historical revolutions"),
+    ("Revolutions & Empires", "rise and fall of empires"),
+    ("Revolutions & Empires", "history of Central Asia Silk Road"),
+]
+
+
+def api(params):
+    response = requests.get(API, params=params, headers=HEADERS, timeout=25)
+    response.raise_for_status()
+    payload = response.json()
+    if "error" in payload:
+        raise RuntimeError(payload["error"].get("info", "Wikipedia API error"))
+    return payload
+
+
+def clean_text(value: str) -> str:
+    value = re.sub(r"\[\d+\]", "", value or "")
+    value = re.sub(r"\s+", " ", value)
+    return value.strip()
+
+
+class Command(BaseCommand):
+    help = "Import sourced history article summaries and available images from Wikipedia."
+
+    def add_arguments(self, parser):
+        parser.add_argument("--limit", type=int, default=500)
+        parser.add_argument("--drafts", action="store_true", help="Save imported articles as drafts.")
+
+    def handle(self, *args, **options):
+        limit = options["limit"]
+        if limit < 1 or limit > 500:
+            raise CommandError("--limit must be between 1 and 500.")
+
+        # Gather candidates from varied history topics, de-duplicating by page ID/title.
+        candidates = {}
+        for category_name, query in TOPICS:
+            try:
+                data = api({
+                    "action": "query", "list": "search", "srsearch": query,
+                    "srnamespace": 0, "srlimit": 40, "format": "json",
+                })
+                for result in data.get("query", {}).get("search", []):
+                    title = result.get("title", "").strip()
+                    if title and title not in candidates:
+                        candidates[title] = category_name
+            except Exception as exc:
+                self.stderr.write(self.style.WARNING(f"Search skipped ({query}): {exc}"))
+            time.sleep(0.15)
+
+        if not candidates:
+            raise CommandError("No Wikipedia results were retrieved. Check internet access and try again.")
+
+        created = skipped = failed = 0
+        for title, category_name in list(candidates.items()):
+            if created >= limit:
+                break
+            try:
+                data = api({
+                    "action": "query", "prop": "extracts|pageimages|info",
+                    "exintro": 1, "explaintext": 1, "exchars": 4500,
+                    "piprop": "thumbnail", "pithumbsize": 1400,
+                    "inprop": "url", "titles": title, "redirects": 1,
+                    "format": "json",
+                })
+                pages = data.get("query", {}).get("pages", {})
+                page = next(iter(pages.values()), {})
+                if page.get("missing") is not None:
+                    skipped += 1
+                    continue
+                canonical_title = page.get("title", title)
+                source_url = page.get("fullurl") or "https://en.wikipedia.org/wiki/" + quote(canonical_title.replace(" ", "_"))
+                extract = clean_text(page.get("extract", ""))
+                if len(extract) < 250:
+                    skipped += 1
+                    continue
+                slug_base = slugify(canonical_title)[:200].strip("-") or "history-article"
+                slug = slug_base
+                suffix = 2
+                while Article.objects.filter(slug=slug).exists():
+                    # Existing title/slug means we don't create duplicates.
+                    existing = Article.objects.filter(slug=slug).first()
+                    if existing and existing.title.casefold() == canonical_title.casefold():
+                        slug = ""
+                        break
+                    slug = f"{slug_base[:190]}-{suffix}"
+                    suffix += 1
+                if not slug:
+                    skipped += 1
+                    continue
+
+                category, _ = Category.objects.get_or_create(name=category_name)
+                image_url = page.get("thumbnail", {}).get("source", "")
+                summary = extract[:285].rsplit(" ", 1)[0].rstrip(".,;:") + "…"
+                body = (
+                    extract + "\n\n"
+                    "## Explore the original source\n"
+                    f"This introductory overview is adapted from the linked Wikipedia article: {source_url}\n\n"
+                    "**Editorial note:** This is an automatically imported starting point. Check dates, citations, image licensing, "
+                    "and historical context before treating it as a fully reviewed feature. Wikipedia text is available under "
+                    "the Creative Commons Attribution-ShareAlike license; retain attribution and comply with that license when reusing it."
+                )
+                now = timezone.now()
+                status = Article.Status.DRAFT if options["drafts"] else Article.Status.PUBLISHED
+                article = Article.objects.create(
+                    title=canonical_title[:200], slug=slug,
+                    subtitle=f"A concise guide to {canonical_title}",
+                    summary=summary[:300], body=body,
+                    category=category,
+                    cover_image_url=image_url,
+                    cover_credit="Image shown by Wikipedia; verify original photographer and licence on the source page.",
+                    cover_alt=f"Historical image associated with {canonical_title}",
+                    cover_source_url=source_url,
+                    reading_minutes=max(2, min(8, len(body.split()) // 200 + 1)),
+                    is_premium=False,
+                    is_featured=(created < 6),
+                    evidence=Article.Evidence.VERIFIED,
+                    status=status,
+                    published_at=None if options["drafts"] else now,
+                    seo_title=canonical_title[:70],
+                    seo_description=summary[:160],
+                    author="The Hidden Archive Editorial Team",
+                )
+                SourceReference.objects.get_or_create(
+                    article=article, title=f"{canonical_title} — Wikipedia",
+                    defaults={"publisher": "Wikipedia contributors", "url": source_url, "verified_on": None},
+                )
+                created += 1
+                if created % 10 == 0:
+                    self.stdout.write(f"Imported {created}/{limit}…")
+            except Exception as exc:
+                failed += 1
+                self.stderr.write(self.style.WARNING(f"Could not import {title}: {exc}"))
+            time.sleep(0.12)
+
+        self.stdout.write(self.style.SUCCESS(
+            f"Finished. Created: {created}; skipped/duplicate/short: {skipped}; errors: {failed}. "
+            f"Mode: {'drafts' if options['drafts'] else 'published'}."
+        ))
+        if created < limit:
+            self.stdout.write(self.style.WARNING(
+                "Fewer articles were created than requested because searches returned limited unique pages or some requests failed. "
+                "Run the command again after reviewing the results; existing slugs are skipped."
+            ))
