@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azizbek | Developer Portfolio</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: rgba(255,255,255,.08);
+      --text: #f8fafc;
+      --muted: #b8c1d1;
+      --accent: #60a5fa;
+      --accent2: #a78bfa;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(96,165,250,.18), transparent 30%),
+        radial-gradient(circle at 90% 20%, rgba(167,139,250,.16), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(11,16,32,.78);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 18px 7%;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+    nav a { color: var(--muted); text-decoration: none; margin-left: 22px; }
+    nav a:hover { color: white; }
+    section { max-width: 1100px; margin: auto; padding: 90px 7%; }
+    .hero { min-height: 90vh; display: grid; place-items: center; text-align: center; }
+    .badge {
+      display: inline-block; padding: 8px 16px; border-radius: 999px;
+      background: rgba(96,165,250,.12); color: #bfdbfe; margin-bottom: 22px;
+    }
+    h1 { font-size: clamp(3rem, 8vw, 6.5rem); line-height: 1.05; }
+    h1 span { color: var(--accent); }
+    .hero p { max-width: 700px; margin: 24px auto; color: var(--muted); font-size: 1.2rem; }
+    .buttons { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .btn {
+      display: inline-block; padding: 13px 22px; border-radius: 12px;
+      text-decoration: none; font-weight: 700;
+      background: var(--accent); color: #07111f;
+    }
+    .btn.secondary { background: transparent; color: white; border: 1px solid rgba(255,255,255,.2); }
+    .section-title { font-size: 2.5rem; margin-bottom: 35px; }
+    .section-title span { color: var(--accent); }
+    .about, .skills, .projects { display: grid; gap: 22px; }
+    .about { grid-template-columns: 1.1fr .9fr; }
+    .card {
+      background: var(--card); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 22px; padding: 28px;
+      backdrop-filter: blur(10px);
+    }
+    .card p { color: var(--muted); }
+    .facts { display: grid; gap: 14px; }
+    .fact { padding: 16px; border-radius: 14px; background: rgba(255,255,255,.05); }
+    .fact strong { display: block; color: var(--accent); }
+    .skills { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+    .skill { text-align: center; font-size: 1.1rem; font-weight: 700; }
+    .skill small { display: block; color: var(--muted); font-weight: normal; margin-top: 6px; }
+    .projects { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .project h3 { margin-bottom: 10px; color: #dbeafe; }
+    .project p { color: var(--muted); }
+    footer { text-align: center; padding: 35px; color: var(--muted); border-top: 1px solid rgba(255,255,255,.08); }
+    @media (max-width: 700px) {
+      nav { padding: 15px 5%; }
+      nav div:last-child { display: none; }
+      .about { grid-template-columns: 1fr; }
+      section { padding: 70px 5%; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">Azizbek.dev</div>
+    <div>
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#projects">Projects</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div>
+      <div class="badge">👋 Welcome to my personal website</div>
+      <h1>Hi, I'm <span>Azizbek</span></h1>
+      <p>
+        I'm a developer and technology enthusiast from Andijan, Uzbekistan.
+        I enjoy programming, learning English, building projects and playing games.
+      </p>
+      <div class="buttons">
+        <a class="btn" href="#about">Learn about me</a>
+        <a class="btn secondary" href="#projects">My projects</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <h2 class="section-title">About <span>Me</span></h2>
+    <div class="about">
+      <div class="card">
+        <p>
+          My name is Azizbek. I am interested in software development and
+          modern technology. I have been learning Python, PostgreSQL, SQL,
+          OOP, UnitTest, Git and GitHub.
+        </p>
+        <br>
+        <p>
+          I like learning new things and improving my skills. I am also
+          preparing to improve my English and work towards a strong IELTS score.
+        </p>
+      </div>
+      <div class="card facts">
+        <div class="fact"><strong>📍 Location</strong>Andijan, Uzbekistan</div>
+        <div class="fact"><strong>💻 Main interests</strong>Python • SQL • PostgreSQL</div>
+        <div class="fact"><strong>🎮 Hobbies</strong>Gaming and technology</div>
+        <div class="fact"><strong>🚀 Goal</strong>Become a better developer</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <h2 class="section-title">My <span>Skills</span></h2>
+    <div class="skills">
+      <div class="card skill">🐍 Python<small>Programming</small></div>
+      <div class="card skill">🐘 PostgreSQL<small>Database</small></div>
+      <div class="card skill">🗃️ SQL<small>Queries & Data</small></div>
+      <div class="card skill">🧪 UnitTest<small>Testing</small></div>
+      <div class="card skill">🌐 HTML & CSS<small>Web</small></div>
+      <div class="card skill">🔧 Git & GitHub<small>Version Control</small></div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <h2 class="section-title">My <span>Projects</span></h2>
+    <div class="projects">
+      <div class="card project">
+        <h3>📚 Library Management System</h3>
+        <p>An OOP project with Books, Users and Library classes, using JSON data storage.</p>
+      </div>
+      <div class="card project">
+        <h3>🗄️ PostgreSQL Projects</h3>
+        <p>Database tables, JOINs, queries, constraints and data management with PostgreSQL.</p>
+      </div>
+      <div class="card project">
+        <h3>🧪 Python Testing</h3>
+        <p>Unit tests for functions and classes using Python's unittest framework.</p>
+      </div>
+      <div class="card project">
+        <h3>🚀 This Website</h3>
+        <p>A personal website created with HTML, CSS and JavaScript and uploaded with GitHub.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    © 2026 Azizbek • Built with HTML, CSS and JavaScript
+  </footer>
+
+</body>
+</html>
