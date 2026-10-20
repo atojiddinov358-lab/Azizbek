@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ a.seo_title|default:a.title }} — The Hidden Archive{% endblock %}
+{% block desc %}{{ a.seo_description|default:a.summary }}{% endblock %}
+{% block content %}
+<article class="wrap article">
+  <p class="eyebrow">{{ a.category }}{% if a.civilization %} · {{ a.civilization }}{% endif %}</p>
+  <h1 class="h1-sm">{{ a.title }}</h1>
+  {% if a.subtitle %}<p class="lead">{{ a.subtitle }}</p>{% endif %}
+  <div class="meta">{{ a.author }} · {{ a.published_at|date:"j M Y" }} · {{ a.reading_minutes }} min read{% if a.location %} · {{ a.location }}{% endif %}</div>
+  <p><span class="badge ev-{{ a.evidence }}">{{ a.get_evidence_display }}</span>{% if a.is_premium %} <span class="badge badge-gold">Premium</span>{% endif %}</p>
+  {% if a.cover_image_url %}<figure class="hero-fig"><img src="{{ a.cover_image_url }}" alt="{{ a.cover_alt }}" decoding="async" onerror="this.closest('figure').remove()">
+    <figcaption class="muted small">Image: {{ a.cover_credit }}{% if a.cover_source_url %} · <a href="{{ a.cover_source_url }}" rel="noopener noreferrer" target="_blank">source and licence</a>{% endif %}</figcaption></figure>{% endif %}
+  {% if allowed %}
+    <div class="prose">{{ a.body|linebreaks }}</div>
+    {% if sources %}<h2>Sources</h2><ul class="sources">{% for s in sources %}
+      <li>{% if s.url %}<a href="{{ s.url }}" rel="noopener noreferrer" target="_blank">{{ s.title }}</a>{% else %}{{ s.title }}{% endif %}{% if s.publisher %} — {{ s.publisher }}{% endif %}{% if not s.verified_on %} <span class="muted small">(link not yet checked)</span>{% endif %}</li>{% endfor %}</ul>{% endif %}
+  {% else %}
+    <div class="prose"><p>{{ a.summary }}</p></div>
+    <div class="paywall">
+      <h2>This investigation is in the Premium Vault</h2>
+      <p>${{ price }} one-time · {{ days }} days of access · no auto-renewal.</p>
+      <a class="btn btn-gold" href="{% url 'premium' %}">See how to unlock</a>
+    </div>
+  {% endif %}
+  {% if related %}<h2>Related</h2><div class="grid">{% for a in related %}{% include "archive/_card.html" %}{% endfor %}</div>{% endif %}
+</article>
+{% endblock %}

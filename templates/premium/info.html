@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Premium — The Hidden Archive{% endblock %}
+{% block content %}
+<section class="wrap section narrow">
+  <p class="eyebrow">The Premium Vault</p>
+  <h1 class="h1-sm">Unlock the deepest investigations</h1>
+  <div class="paywall">
+    <p class="price"><strong>${{ price }}</strong> USD</p>
+    <ul class="clean">
+      <li>One-time payment, not a subscription</li>
+      <li>{{ days }} days of premium access from the moment payment is verified</li>
+      <li>Free articles and key factual corrections always stay free</li>
+    </ul>
+    <button class="btn btn-gold" disabled>Checkout opens in a later update</button>
+    <p class="muted small">Payments are not connected yet, so nothing can be charged.</p>
+  </div>
+</section>
+{% endblock %}

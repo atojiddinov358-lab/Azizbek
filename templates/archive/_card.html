@@ -1,0 +1,13 @@
+<a class="card reveal" href="{{ a.get_absolute_url }}">
+  <div class="cover">
+    <div class="cover-ph" aria-hidden="true"><span>{{ a.civilization.name|default:a.category.name|slice:":1" }}</span></div>
+    {% if a.cover_image_url %}<img src="{{ a.cover_image_url }}" alt="{{ a.cover_alt }}" loading="lazy" decoding="async" onerror="this.remove()">{% endif %}
+    {% if a.is_premium %}<span class="badge badge-gold">Premium</span>{% endif %}
+  </div>
+  <div class="card-body">
+    <div class="meta">{{ a.period|default:"" }}{% if a.period and a.location %} · {% endif %}{{ a.location }}</div>
+    <h3>{{ a.title }}</h3>
+    <p>{{ a.summary }}</p>
+    <div class="meta foot"><span class="badge ev-{{ a.evidence }}">{{ a.get_evidence_display }}</span><span>{{ a.reading_minutes }} min read</span></div>
+  </div>
+</a>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <p class="eyebrow">History has secrets. Discover what lies beneath.</p>
+    <h1>THE PAST IS NOT AS SIMPLE AS IT SEEMS.</h1>
+    <p class="lead">Explore the discoveries, forgotten civilizations, and historical mysteries that continue to challenge our understanding of the world.</p>
+    <div class="btns">
+      <a class="btn btn-gold" href="{% url 'archive' %}">EXPLORE THE ARCHIVE</a>
+      <a class="btn btn-ghost" href="{% url 'premium' %}">UNLOCK PREMIUM</a>
+    </div>
+    <p class="counter"><strong>{{ total }}</strong> published {{ total|pluralize:"story,stories" }} in the archive</p>
+  </div>
+  <a class="scroll" href="#featured" aria-label="Scroll to discoveries"><span></span></a>
+</section>
+
+<section class="wrap section" id="featured">
+  <h2 class="reveal">The Most Mysterious Discoveries</h2>
+  {% if featured %}
+  <div class="grid-feature">{% for a in featured %}{% include "archive/_card.html" %}{% endfor %}</div>
+  {% else %}<p class="empty">No stories published yet. Add some in the admin, or run <code>python manage.py seed_demo</code> in development.</p>{% endif %}
+</section>
+
+<section class="wrap section">
+  <h2 class="reveal">Explore by Civilization</h2>
+  {% if civs %}
+  <div class="tiles">{% for c in civs %}
+    <a class="tile reveal" href="{% url 'archive' %}?civ={{ c.slug }}"><span class="tile-name">{{ c.name }}</span><span class="tile-n">{{ c.n }} {{ c.n|pluralize:"story,stories" }}</span></a>
+  {% endfor %}</div>
+  {% else %}<p class="empty">Civilizations will appear here once they are added.</p>{% endif %}
+</section>
+
+<section class="vault">
+  <div class="wrap vault-inner reveal">
+    <p class="eyebrow">The Premium Vault</p>
+    <h2>THE DEEPEST MYSTERIES ARE STILL WAITING.</h2>
+    <p class="lead">Go beyond the familiar stories. Explore carefully researched investigations, extraordinary discoveries, and the evidence behind history's most enduring questions.</p>
+    <p class="price"><strong>${{ price }}</strong> one-time payment · {{ days }} days of premium access · no auto-renewal</p>
+    <a class="btn btn-gold" href="{% url 'premium' %}">UNLOCK THE VAULT</a>
+  </div>
+</section>
+
+<section class="wrap section">
+  <h2 class="reveal">Fact, Hypothesis or Speculation?</h2>
+  <div class="key reveal">
+    <div><span class="badge ev-verified">Verified fact</span><p>Supported by strong, independent evidence.</p></div>
+    <div><span class="badge ev-hypothesis">Credible hypothesis</span><p>Proposed by researchers, not yet settled.</p></div>
+    <div><span class="badge ev-disputed">Disputed claim</span><p>Scholars disagree, or evidence is mixed.</p></div>
+    <div><span class="badge ev-speculation">Unsupported speculation</span><p>Popular, but lacking reliable evidence.</p></div>
+  </div>
+</section>
+{% endblock %}
